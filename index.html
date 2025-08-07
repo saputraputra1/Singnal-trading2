@@ -221,7 +221,6 @@
         let previousPrice = 0;
         let priceChart = null;
         let tvWidget = null;
-        let refreshInterval = null;
         let forexPairs = [];
 
         // DOM Elements
@@ -250,10 +249,14 @@
             loadMarketMovers();
             setupEventListeners();
             loadFavorites();
-            updateData();
             
-            // Set up auto-refresh every 1 minute
-            refreshInterval = setInterval(updateData, 60000);
+            // Initial data load
+            updatePrice();
+            updateSignalsAndEOD();
+
+            // Set up auto-refresh intervals
+            setInterval(updatePrice, 20000); // Refresh price every 20 seconds
+            setInterval(updateSignalsAndEOD, 60000); // Refresh signals and EOD every 60 seconds
         });
 
         // Set up event listeners
@@ -261,12 +264,14 @@
             symbolSelect.addEventListener('change', function() {
                 currentSymbol = this.value;
                 currentSymbolEl.textContent = currentSymbol;
-                updateData();
+                updatePrice();
+                updateSignalsAndEOD();
                 updateChart();
             });
 
             refreshBtn.addEventListener('click', function() {
-                updateData();
+                updatePrice();
+                updateSignalsAndEOD();
                 // Add visual feedback
                 this.classList.add('animate-spin');
                 setTimeout(() => {
@@ -393,14 +398,13 @@
             marketMoversEl.innerHTML = html;
         }
 
-        // Update all data
-        async function updateData() {
+        // Update signals and EOD data
+        async function updateSignalsAndEOD() {
             try {
-                await updatePrice();
                 updateSignals();
                 updateEODData();
             } catch (error) {
-                console.error('Error updating data:', error);
+                console.error('Error updating signals and EOD data:', error);
             }
         }
 
@@ -742,7 +746,8 @@
                     symbolSelect.value = symbol;
                     currentSymbol = symbol;
                     currentSymbolEl.textContent = currentSymbol;
-                    updateData();
+                    updatePrice();
+                    updateSignalsAndEOD();
                     updateChart();
                 }
             });
